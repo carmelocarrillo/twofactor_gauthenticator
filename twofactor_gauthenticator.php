@@ -335,7 +335,7 @@ class twofactor_gauthenticator extends rcube_plugin
         }
         
         // infor
-        $table->add(null, '<td><br>'.$this->gettext('msg_infor').'</td>');
+        // $table->add(null, '<td><br>'.$this->gettext('msg_infor').'</td>');
 
         // button to setup all fields if doesn't exists secret
         $html_setup_all_fields = '';
