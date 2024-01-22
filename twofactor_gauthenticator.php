@@ -47,6 +47,8 @@ class twofactor_gauthenticator extends rcube_plugin
 
 		// config
 		$this->register_action('twofactor_gauthenticator', array($this, 'twofactor_gauthenticator_init'));
+		$this->register_action('plugin.twofactor_gauthenticator-access', array($this, 'twofactor_gauthenticator_access'));
+		$this->register_action('plugin.twofactor_gauthenticator-check', array($this, 'twofactor_gauthenticator_access_check'));
 		$this->register_action('plugin.twofactor_gauthenticator-save', array($this, 'twofactor_gauthenticator_save'));
 		$this->include_script('twofactor_gauthenticator.js');
 		$this->include_script('qrcode.min.js');
@@ -220,11 +222,31 @@ class twofactor_gauthenticator extends rcube_plugin
         $rcmail = rcmail::get_instance();
        
         $this->add_texts('localization/', true);
-        $this->register_handler('plugin.body', array($this, 'twofactor_gauthenticator_form'));
+        $this->register_handler('plugin.body', array($this, 'twofactor_gauthenticator_access_form'));
+		// $this->register_handler('plugin.body', array($this, 'twofactor_gauthenticator_form'));
 		
         $rcmail->output->set_pagetitle($this->gettext('twofactor_gauthenticator'));
         $rcmail->output->send('plugin');
     }
+
+	function twofactor_gauthenticator_access_check()
+	{
+		$rcmail = rcmail::get_instance();
+        
+        $this->add_texts('localization/', true);
+        $this->register_handler('plugin.body', array($this, 'twofactor_gauthenticator_form'));
+        $rcmail->output->set_pagetitle($this->gettext('twofactor_gauthenticator'));
+        
+        // POST variables
+        $access = rcube_utils::get_input_value('_access_plugin', rcube_utils::INPUT_POST);
+
+		if ($access == 'ok') {
+			$rcmail->output->show_message($this->gettext('access_plugin_submit'), 'confirmation');
+         
+			$rcmail->overwrite_action('plugin.twofactor_gauthenticator');
+			$rcmail->output->send('plugin');
+		}
+	}
 
     // save config
     function twofactor_gauthenticator_save() 
@@ -266,7 +288,35 @@ class twofactor_gauthenticator extends rcube_plugin
         $rcmail->overwrite_action('plugin.twofactor_gauthenticator');
         $rcmail->output->send('plugin');
     }
-  
+
+	public function twofactor_gauthenticator_access_form()
+	{
+        $rcmail = rcmail::get_instance();
+
+		$form_id = 'access_plugin_form';
+        $out = $rcmail->output->request_form([
+                'id'      => $form_id,
+                'name'    => $form_id,
+                'method'  => 'post',
+                'action'  => 'plugin.twofactor_gauthenticator-check',
+                'noclose' => true
+            ]);
+
+        $out .= '<fieldset><legend>' . $this->gettext('password') . '</legend>' . "\n";
+
+        $table = new html_table(['cols' => 2, 'class' => 'propform']);
+
+        $field_id = 'access_plugin';
+        $input_password_access = new html_passwordfield(['name' => '_' . $field_id, 'id' => $field_id, 'size' => 15]);
+        $table->add('title', html::label($field_id, rcube::Q($this->gettext('access_plugin'))));
+        $table->add('', $input_password_access->show() . '<div id="pass-check">');
+
+        $out .= $table->show();
+        $out .= "</fieldset>\n";
+        $out .= '</form>';
+
+        return $out;
+	}
 
     // form config
     public function twofactor_gauthenticator_form() 
@@ -291,7 +341,7 @@ class twofactor_gauthenticator extends rcube_plugin
         
         // secret
         $field_id = '2FA_secret';
-	$input_descsecret = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 60, 'type' => 'password', 'value' => $data['secret'], 'autocomplete' => 'new-password'));
+		$input_descsecret = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 60, 'type' => 'password', 'value' => $data['secret'], 'autocomplete' => 'new-password'));
         $table->add('title', html::label($field_id, rcube::Q($this->gettext('secret'))));
         $html_secret = $input_descsecret->show();
         if($data['secret'])
@@ -317,10 +367,10 @@ class twofactor_gauthenticator extends rcube_plugin
        	}
         if($data['secret']) {
        		$html_recovery_codes .= '<input type="button" class="button mainaction" id="2FA_show_recovery_codes" value="'.$this->gettext('show_recovery_codes').'">';
-	}
-	else {
+		}
+		else {
        		$html_recovery_codes .= '<input type="button" class="button mainaction" id="2FA_show_recovery_codes" disabled="disabled" value="'.$this->gettext('show_recovery_codes').'">';
-	}
+		}
        	$table->add(null, $html_recovery_codes);
         
         
