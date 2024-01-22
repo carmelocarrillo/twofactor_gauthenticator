@@ -8,6 +8,9 @@ $labels['code'] = 'Google Authenticator Code';
 
 $labels['two_step_verification_form'] = 'Verificación en dos pasos';
 
+$labels['access_plugin'] = 'Acceso';
+$labels['access_plugin_submit'] = 'Aceptar';
+
 $labels['secret'] = 'Secreto';
 $labels['qr_code'] = 'Código QR';
 $labels['msg_infor'] = 'Puedes añadir un <i>secreto</i> generado en tu ordenador con <a href="https://github.com/google/google-authenticator" target="_blank">google-authenticator</a> y usarlo';
@@ -39,3 +42,4 @@ $labels['check_code_to_activate'] = 'Para guardar, debes comprobar con el códig
 // Messages used for the different portions of the plugin
 $messages = array();
 $messages['successfully_saved'] = 'Datos han sido guardados correctamente.';
+
